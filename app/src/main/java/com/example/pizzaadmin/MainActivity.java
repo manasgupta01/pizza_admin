@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private EditText itemNameEditText, itemPriceEditText;
     private ImageView imageView;
+
     private Bitmap selectedImageBitmap;
     private FirebaseFirestore firestore;
 
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button buttonOrder = (Button)findViewById(R.id.buttonOrder);
         itemNameEditText = findViewById(R.id.itemNameEditText);
         itemPriceEditText = findViewById(R.id.itemPriceEditText);
         imageView = findViewById(R.id.imageView);
@@ -48,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
 
+        buttonOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,OrderActivity.class);
+                startActivity(intent);
+            }
+        });
         chooseImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,12 +94,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void uploadItem() {
         String itemName = itemNameEditText.getText().toString().trim();
-        String itemPrice = itemPriceEditText.getText().toString().trim();
+        String Price = itemPriceEditText.getText().toString().trim();
 
-        if (itemName.isEmpty() || itemPrice.isEmpty() || selectedImageBitmap == null) {
+        if (itemName.isEmpty() || Price.isEmpty() || selectedImageBitmap == null) {
             Toast.makeText(MainActivity.this, "Please fill all the fields and select an image", Toast.LENGTH_SHORT).show();
             return;
         }
+        int itemPrice = Integer.parseInt(Price);
 
         // Convert the selected image bitmap to a base64-encoded string
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

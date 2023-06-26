@@ -1,6 +1,5 @@
 package com.example.pizzaadmin;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,68 +10,85 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
-    private List<Order> orderList;
-    private Context context;
-    private OnPreparedClickListener onPreparedClickListener;
-    public double getTotalPrice() {
-        double totalPrice = 0.0;
-        for (Order order : orderList) {
-            totalPrice += order.getTotalAmount();
-        }
-        return totalPrice;
-    }
-    public OrderAdapter(List<Order> orderList, Context context) {
-        this.orderList = orderList;
-        this.context = context;
-    }
 
-    public void setOnPreparedClickListener(OnPreparedClickListener listener) {
-        this.onPreparedClickListener = listener;
+    private List<Order> orders;
+    private OrderItemClickListener clickListener;
+
+    public OrderAdapter(List<Order> orders, OrderItemClickListener clickListener) {
+        this.orders = orders;
+        this.clickListener = clickListener;
     }
 
     @NonNull
     @Override
     public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_order, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.order_item_layout, parent, false);
         return new OrderViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-        Order order = orderList.get(position);
-
-        holder.orderIdTextView.setText("Order ID: " + order.getOrderId());
-        holder.orderTotalTextView.setText("Total Price: $" + order.getTotalPrice());
-
-        holder.prepareButton.setOnClickListener(v -> {
-            if (onPreparedClickListener != null) {
-                onPreparedClickListener.onPreparedClick(position, order);
-            }
-        });
+        Order order = orders.get(position);
+        holder.bind(order);
     }
 
     @Override
     public int getItemCount() {
-        return orderList.size();
+        return orders.size();
     }
 
-    public interface OnPreparedClickListener {
-        void onPreparedClick(int position, Order order);
+    public interface OrderItemClickListener {
+        void onOrderItemClick(int position);
     }
 
-    static class OrderViewHolder extends RecyclerView.ViewHolder {
-        TextView orderIdTextView;
-        TextView orderTotalTextView;
-        Button prepareButton;
+    class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public OrderViewHolder(@NonNull View itemView) {
+        private TextView orderIdTextView;
+        private TextView itemNameTextView;
+        private Button statusButton;
+
+        OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            orderIdTextView = itemView.findViewById(R.id.orderIdTextView);
-            orderTotalTextView = itemView.findViewById(R.id.orderTotalTextView);
-            prepareButton = itemView.findViewById(R.id.prepareButton);
+            orderIdTextView = itemView.findViewById(R.id.text_order_id);
+            itemNameTextView = itemView.findViewById(R.id.text_name);
+            statusButton = itemView.findViewById(R.id.button_update_status);
+
+            itemView.setOnClickListener(this);
+            statusButton.setOnClickListener(this);
+        }
+
+        void bind(Order order) {
+            orderIdTextView.setText("Order ID: " + order.getOrderId());
+            itemNameTextView.setText("Item Name: " + order.getName());
+
+            String status = order.getStatus();
+            statusButton.setText(status);
+            if (status.equals("preparing")) {
+                statusButton.setEnabled(true);
+            } else {
+                statusButton.setEnabled(false);
+            }
+        }
+
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                clickListener.onOrderItemClick(position);
+            }
         }
     }
 }
-
